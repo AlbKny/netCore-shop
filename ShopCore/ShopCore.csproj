@@ -14,4 +14,8 @@
     <ProjectReference Include="..\ShopCore.Data\ShopCore.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ShopCore.Data\ShopCore.Data.csproj" />
+  </ItemGroup>
+
 </Project>
