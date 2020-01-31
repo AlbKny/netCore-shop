@@ -14,7 +14,7 @@ namespace ShopCore.Data.Migrations
                 name: "Price",
                 table: "Products",
                 nullable: false,
-                defaultValue: 0m);;
+                defaultValue: 0m);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
