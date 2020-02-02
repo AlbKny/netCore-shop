@@ -2,20 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ShopCore.Data;
+using ShopCore.Models;
 
 namespace ShopCore.Controllers
 {
     public class ProductsController : Controller
     {
         private readonly ShopCoreDbContext _context;
+        private readonly MapperConfiguration mapperConfiguration = new MapperConfiguration(cfg => cfg.CreateMap<Product, ProductModel>());
+        private Mapper _mapper;
 
-        public ProductsController(ShopCoreDbContext context)
+        public ProductsController(ShopCoreDbContext context )
         {
             _context = context;
+            _mapper = new Mapper(mapperConfiguration);
         }
 
         // GET: Products
@@ -55,13 +60,16 @@ namespace ShopCore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Ammount,Price")] Product product)
         {
+            
+            var product01 = _mapper.Map<Product, ProductModel>(product);
+
             if (ModelState.IsValid)
             {
-                _context.Add(product);
+                _context.Add(product01);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(product01);
         }
 
         // GET: Products/Edit/5
