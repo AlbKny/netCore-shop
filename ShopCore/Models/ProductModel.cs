@@ -14,7 +14,7 @@ namespace ShopCore.Models
         public string Name { get; set; }
         public int Ammount { get; set; }
         [DataType(DataType.Currency)]
-        [Range(00.00, 10000.00)]
+        //[Range(00.00, 10000.00)]
         public decimal Price { get; set; }
     }
 }

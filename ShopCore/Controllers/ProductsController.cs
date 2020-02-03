@@ -14,19 +14,26 @@ namespace ShopCore.Controllers
     public class ProductsController : Controller
     {
         private readonly ShopCoreDbContext _context;
-        private readonly MapperConfiguration mapperConfiguration = new MapperConfiguration(cfg => cfg.CreateMap<Product, ProductModel>());
-        private Mapper _mapper;
+        private readonly MapperConfiguration mapperConfiguration;
+        private readonly Mapper mapper;
 
         public ProductsController(ShopCoreDbContext context )
         {
             _context = context;
-            _mapper = new Mapper(mapperConfiguration);
+            this.mapperConfiguration = new MapperConfiguration(cfg => 
+            {
+                cfg.CreateMap<Product, ProductModel>();
+                cfg.CreateMap<ProductModel, Product>();
+            });
+            this.mapper = new Mapper(mapperConfiguration);
         }
 
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Products.ToListAsync());
+            List<Product> productList = await _context.Products.ToListAsync();
+            var prodacts = mapper.Map<List<Product>, List<ProductModel>>(productList);
+            return View(prodacts);
         }
 
         // GET: Products/Details/5
@@ -37,13 +44,14 @@ namespace ShopCore.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
+            var model = await _context.Products
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
+            if (model == null)
             {
                 return NotFound();
             }
 
+            var product = mapper.Map<Product, ProductModel>(model);
             return View(product);
         }
 
@@ -58,10 +66,9 @@ namespace ShopCore.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Ammount,Price")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,Name,Ammount,Price")] ProductModel model)
         {
-            
-            var product01 = _mapper.Map<Product, ProductModel>(product);
+            var product = mapper.Map<ProductModel, Product>(model);
 
             if (ModelState.IsValid)
             {
@@ -69,7 +76,7 @@ namespace ShopCore.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(product01);
+            return View(model);
         }
 
         // GET: Products/Edit/5
@@ -80,11 +87,13 @@ namespace ShopCore.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
+            var model = await _context.Products.FindAsync(id);
+            if (model == null)
             {
                 return NotFound();
             }
+
+            var product = mapper.Map<Product, ProductModel>(model);
             return View(product);
         }
 
@@ -93,9 +102,11 @@ namespace ShopCore.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Ammount,Price")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Ammount,Price")] ProductModel model)
         {
-            if (id != product.Id)
+            var product = mapper.Map<ProductModel, Product>(model);
+
+            if (id != model.Id)
             {
                 return NotFound();
             }
@@ -109,7 +120,7 @@ namespace ShopCore.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProductExists(product.Id))
+                    if (!ProductExists(model.Id))
                     {
                         return NotFound();
                     }
@@ -120,7 +131,7 @@ namespace ShopCore.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(model);
         }
 
         // GET: Products/Delete/5
@@ -131,13 +142,13 @@ namespace ShopCore.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
+            var model = await _context.Products
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
+            if (model == null)
             {
                 return NotFound();
             }
-
+            var product = mapper.Map<Product, ProductModel>(model);
             return View(product);
         }
 
