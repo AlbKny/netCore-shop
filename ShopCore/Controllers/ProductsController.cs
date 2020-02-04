@@ -45,7 +45,7 @@ namespace ShopCore.Controllers
             }
 
             var product = await context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FindAsync(id);
             if (product == null)
             {
                 return NotFound();
@@ -141,13 +141,13 @@ namespace ShopCore.Controllers
             }
 
             var product = await context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FindAsync(id);
             if (product == null)
             {
                 return NotFound();
             }
             var productModel = mapper.Map<Product, ProductModel>(product);
-            return View(product);
+            return View(productModel);
         }
 
         // POST: Products/Delete/5
