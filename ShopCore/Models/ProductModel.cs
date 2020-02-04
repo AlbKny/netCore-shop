@@ -11,10 +11,12 @@ namespace ShopCore.Models
     {
         public int Id { get; set; }
         [StringLength(30,ErrorMessage ="Przekroczono limit znaków")]
+        [Display(Name = "Nazwa")]
         public string Name { get; set; }
+        [Display(Name = "Ilość")]
         public int Ammount { get; set; }
         [DataType(DataType.Currency)]
-        //[Range(00.00, 10000.00)]
+        [Display(Name = "Cena")]
         public decimal Price { get; set; }
     }
 }
