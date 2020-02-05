@@ -2,26 +2,38 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ShopCore.Data;
+using ShopCore.Models;
 
 namespace ShopCore.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly ShopCoreDbContext _context;
+        private readonly ShopCoreDbContext context;
+        private readonly MapperConfiguration mapperConfiguration;
+        private readonly Mapper mapper;
 
         public ProductsController(ShopCoreDbContext context)
         {
-            _context = context;
+            this.context = context;
+            this.mapperConfiguration = new MapperConfiguration(cfg => 
+            {
+                cfg.CreateMap<Product, ProductModel>();
+                cfg.CreateMap<ProductModel, Product>();
+            });
+            this.mapper = new Mapper(mapperConfiguration);
         }
 
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Products.ToListAsync());
+            List<Product> productList = await context.Products.ToListAsync();
+            var products = mapper.Map<List<Product>, List<ProductModel>>(productList);
+            return View(products);
         }
 
         // GET: Products/Details/5
@@ -32,14 +44,15 @@ namespace ShopCore.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await context.Products
+                .FindAsync(id);
             if (product == null)
             {
                 return NotFound();
             }
 
-            return View(product);
+            var productModel = mapper.Map<Product, ProductModel>(product);
+            return View(productModel);
         }
 
         // GET: Products/Create
@@ -53,15 +66,16 @@ namespace ShopCore.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Ammount,Price")] Product product)
+        public async Task<IActionResult> Create([Bind("Name,Ammount,Price")] ProductModel model)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(product);
-                await _context.SaveChangesAsync();
+                var product = mapper.Map<ProductModel, Product>(model);
+                context.Add(product);
+                await context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(model);
         }
 
         // GET: Products/Edit/5
@@ -72,12 +86,14 @@ namespace ShopCore.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products.FindAsync(id);
+            var product = await context.Products.FindAsync(id);
             if (product == null)
             {
                 return NotFound();
             }
-            return View(product);
+
+            var productModel = mapper.Map<Product, ProductModel>(product);
+            return View(productModel);
         }
 
         // POST: Products/Edit/5
@@ -85,23 +101,19 @@ namespace ShopCore.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Ammount,Price")] Product product)
+        public async Task<IActionResult> Edit([Bind("Id,Name,Ammount,Price")] ProductModel model)
         {
-            if (id != product.Id)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
+                    var product = mapper.Map<ProductModel, Product>(model);
+                    context.Update(product);
+                    await context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProductExists(product.Id))
+                    if (!ProductExists(model.Id))
                     {
                         return NotFound();
                     }
@@ -112,7 +124,7 @@ namespace ShopCore.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(model);
         }
 
         // GET: Products/Delete/5
@@ -123,14 +135,14 @@ namespace ShopCore.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await context.Products
+                .FindAsync(id);
             if (product == null)
             {
                 return NotFound();
             }
-
-            return View(product);
+            var productModel = mapper.Map<Product, ProductModel>(product);
+            return View(productModel);
         }
 
         // POST: Products/Delete/5
@@ -138,15 +150,15 @@ namespace ShopCore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _context.Products.FindAsync(id);
-            _context.Products.Remove(product);
-            await _context.SaveChangesAsync();
+            var product = await context.Products.FindAsync(id);
+            context.Products.Remove(product);
+            await context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ProductExists(int id)
         {
-            return _context.Products.Any(e => e.Id == id);
+            return context.Products.Any(e => e.Id == id);
         }
     }
 }
