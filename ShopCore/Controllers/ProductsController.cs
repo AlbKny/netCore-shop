@@ -17,7 +17,7 @@ namespace ShopCore.Controllers
         private readonly MapperConfiguration mapperConfiguration;
         private readonly Mapper mapper;
 
-        public ProductsController(ShopCoreDbContext context )
+        public ProductsController(ShopCoreDbContext context)
         {
             this.context = context;
             this.mapperConfiguration = new MapperConfiguration(cfg => 
@@ -101,13 +101,8 @@ namespace ShopCore.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Ammount,Price")] ProductModel model)
+        public async Task<IActionResult> Edit([Bind("Id,Name,Ammount,Price")] ProductModel model)
         {
-            if (id != model.Id)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
                 try
